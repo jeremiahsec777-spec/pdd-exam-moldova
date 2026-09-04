@@ -1,7 +1,4 @@
 {
-  "installCommand": "npm --prefix web-app install",
-  "buildCommand": "npm --prefix web-app run build",
-  "outputDirectory": "web-app/dist",
   "headers": [
     {
       "source": "/(sw\\.js|registerSW\\.js|manifest\\.webmanifest)",
