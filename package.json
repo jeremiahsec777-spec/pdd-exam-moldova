@@ -1,0 +1,9 @@
+{
+  "name": "pdd-exam-moldova",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "build": "npm --prefix web-app run build",
+    "install": "npm --prefix web-app install"
+  }
+}
