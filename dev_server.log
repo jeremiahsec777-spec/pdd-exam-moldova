@@ -1,0 +1,17 @@
+
+> pdd-quiz@0.0.0 dev
+> vite
+
+
+  VITE v7.3.1  ready in 333 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+7:03:23 PM [vite] (client) hmr update /src/pages/QuizPage.tsx
+7:18:49 PM [vite] (client) hmr update /src/pages/HomePage.tsx, /src/pages/QuizPage.tsx, /src/pages/SettingsPage.tsx, /src/pages/StatsPage.tsx, /src/pages/AiGenPage.tsx
+7:19:01 PM [vite] (client) hmr update /src/pages/SettingsPage.tsx
+7:42:35 PM [vite] (client) hmr update /src/pages/HomePage.tsx, /src/pages/QuizPage.tsx, /src/pages/SettingsPage.tsx, /src/pages/StatsPage.tsx, /src/pages/AiGenPage.tsx
+7:42:59 PM [vite] (client) hmr update /src/pages/QuizPage.tsx
+7:50:23 PM [vite] (client) hmr update /src/pages/QuizPage.tsx
+8:02:36 PM [vite] (client) hmr update /src/pages/HomePage.tsx, /src/pages/QuizPage.tsx, /src/pages/SettingsPage.tsx, /src/pages/StatsPage.tsx, /src/pages/AiGenPage.tsx
+8:02:51 PM [vite] (client) hmr update /src/pages/QuizPage.tsx
