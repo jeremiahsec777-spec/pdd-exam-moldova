@@ -13,6 +13,34 @@ export interface AiCoachAnalysis {
   recommendations: string;
 }
 
+async function callGeminiWithFallback(ai: GoogleGenAI, prompt: string): Promise<string> {
+  const models = ['gemini-3.8-flash', 'gemini-2.5-flash'];
+  let lastError: unknown = null;
+
+  for (const model of models) {
+    try {
+      const response = await ai.models.generateContent({
+        model,
+        contents: [{ role: 'user', parts: [{ text: prompt }] }]
+      });
+      if (response.text) return response.text;
+    } catch (err: unknown) {
+      lastError = err;
+      const errorMsg = err instanceof Error ? err.message : JSON.stringify(err);
+      const isOverloaded = errorMsg.includes('503') || errorMsg.includes('high demand') || errorMsg.includes('UNAVAILABLE') || errorMsg.includes('ResourceExhausted');
+
+      if (isOverloaded && model !== models[models.length - 1]) {
+        console.warn(`Модель ${model} испытывает высокую нагрузку (503 High Demand). Автоматическое переключение на стабильную модель ${models[1]}...`);
+        await new Promise(r => setTimeout(r, 1200));
+        continue;
+      }
+      throw err;
+    }
+  }
+
+  throw lastError;
+}
+
 export async function runFullAiAnalysis(): Promise<AiCoachAnalysis> {
   const settings = await loadSettings();
   if (!settings.geminiApiKey) {
@@ -119,12 +147,16 @@ ${mistakeSummaries || 'Конкретные вопросы пока не нак�
 Конкретные 3 шага: какие 2-3 темы перепройти, на что обратить внимание при сдаче экзамена.`;
 
   const ai = new GoogleGenAI({ apiKey: settings.geminiApiKey });
-  const response = await ai.models.generateContent({
-    model: 'gemini-3.8-flash',
-    contents: [{ role: 'user', parts: [{ text: prompt }] }]
-  });
-
-  const fullText = response.text || '';
+  let fullText = '';
+  try {
+    fullText = await callGeminiWithFallback(ai, prompt);
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : JSON.stringify(err);
+    if (errorMsg.includes('503') || errorMsg.includes('high demand') || errorMsg.includes('UNAVAILABLE')) {
+      throw new Error('Серверы Google Gemini сейчас испытывают пиковую нагрузку (503 High Demand). Пожалуйста, подождите 10–15 секунд и нажмите кнопку снова.');
+    }
+    throw err;
+  }
 
   // Extract sections or return full text
   return {
@@ -176,12 +208,15 @@ ${list}
 Пиши живо, понятно и кратко (до 250 слов).`;
 
   const ai = new GoogleGenAI({ apiKey: settings.geminiApiKey });
-  const response = await ai.models.generateContent({
-    model: 'gemini-3.8-flash',
-    contents: [{ role: 'user', parts: [{ text: prompt }] }]
-  });
-
-  return response.text || '';
+  try {
+    return await callGeminiWithFallback(ai, prompt);
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : JSON.stringify(err);
+    if (errorMsg.includes('503') || errorMsg.includes('high demand') || errorMsg.includes('UNAVAILABLE')) {
+      throw new Error('Серверы Google Gemini сейчас испытывают пиковую нагрузку (503 High Demand). Пожалуйста, подождите 10–15 секунд и нажмите кнопку снова.');
+    }
+    throw err;
+  }
 }
 
 function extractSection(text: string, startHeader: string, nextHeader: string | null): string {
