@@ -1,4 +1,5 @@
 {
+  "outputDirectory": "dist",
   "headers": [
     {
       "source": "/(sw\\.js|registerSW\\.js|manifest\\.webmanifest)",
