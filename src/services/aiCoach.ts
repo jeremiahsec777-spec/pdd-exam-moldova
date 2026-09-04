@@ -14,10 +14,11 @@ export interface AiCoachAnalysis {
 }
 
 async function callGeminiWithFallback(ai: GoogleGenAI, prompt: string): Promise<string> {
-  const models = ['gemini-3.8-flash', 'gemini-2.5-flash'];
+  const models = ['gemini-3.8-flash', 'gemini-3.7-flash', 'gemini-3.6-flash'];
   let lastError: unknown = null;
 
-  for (const model of models) {
+  for (let i = 0; i < models.length; i++) {
+    const model = models[i];
     try {
       const response = await ai.models.generateContent({
         model,
@@ -29,9 +30,8 @@ async function callGeminiWithFallback(ai: GoogleGenAI, prompt: string): Promise<
       const errorMsg = err instanceof Error ? err.message : JSON.stringify(err);
       const isOverloaded = errorMsg.includes('503') || errorMsg.includes('high demand') || errorMsg.includes('UNAVAILABLE') || errorMsg.includes('ResourceExhausted');
 
-      if (isOverloaded && model !== models[models.length - 1]) {
-        console.warn(`Модель ${model} испытывает высокую нагрузку (503 High Demand). Автоматическое переключение на стабильную модель ${models[1]}...`);
-        await new Promise(r => setTimeout(r, 1200));
+      if (isOverloaded && i < models.length - 1) {
+        console.warn(`Модель ${model} испытывает высокую нагрузку (503). Переключаемся на ${models[i + 1]}...`);
         continue;
       }
       throw err;

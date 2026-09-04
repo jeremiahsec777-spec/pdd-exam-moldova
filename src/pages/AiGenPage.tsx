@@ -66,12 +66,27 @@ export const AiGenPage = () => {
   "correctIndex": 0
 }`;
 
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.8-flash',
-        contents: [{ role: 'user', parts: [{ text: prompt }, imagePart] }]
-      });
+      const models = ['gemini-3.8-flash', 'gemini-3.7-flash', 'gemini-3.6-flash'];
+      let response;
+      for (let i = 0; i < models.length; i++) {
+        const model = models[i];
+        try {
+          response = await ai.models.generateContent({
+            model,
+            contents: [{ role: 'user', parts: [{ text: prompt }, imagePart] }]
+          });
+          if (response) break;
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : String(err);
+          const isOverloaded = msg.includes('503') || msg.includes('high demand') || msg.includes('UNAVAILABLE') || msg.includes('ResourceExhausted');
+          if (isOverloaded && i < models.length - 1) {
+            continue;
+          }
+          throw err;
+        }
+      }
 
-      const text = response.text || '';
+      const text = response?.text || '';
       try {
         const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
         const parsed = JSON.parse(cleanJson) as GeneratedQuestion;
