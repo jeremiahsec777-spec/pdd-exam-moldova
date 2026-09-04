@@ -10,21 +10,30 @@ export default function StatsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    (async () => {
-      try {
-        const [data, allStats, exams] = await Promise.all([
-          loadQuizData(),
-          loadAllStats(),
-          loadExamResults()
-        ]);
-        setQuizData(data);
-        setStats(allStats);
-        setExamResults(exams);
-      } catch (e) {
-        console.error('Failed to load stats data', e);
-      }
-      setLoading(false);
-    })();
+    let active = true;
+
+    function fetchStats() {
+      Promise.all([loadQuizData(), loadAllStats(), loadExamResults()])
+        .then(([data, allStats, exams]) => {
+          if (active) {
+            setQuizData(data);
+            setStats(allStats);
+            setExamResults(exams);
+            setLoading(false);
+          }
+        })
+        .catch((e) => {
+          console.error('Failed to load stats data', e);
+          if (active) setLoading(false);
+        });
+    }
+
+    fetchStats();
+    window.addEventListener('pdd_data_synced', fetchStats);
+    return () => {
+      active = false;
+      window.removeEventListener('pdd_data_synced', fetchStats);
+    };
   }, []);
 
   if (loading) return <div className="page" style={{ textAlign: 'center' }}>Loading stats...</div>;

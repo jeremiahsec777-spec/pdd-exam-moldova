@@ -78,6 +78,7 @@ export async function saveQuizResults(
   delete ts.sessionData;
   all[topicKey] = ts;
   await saveAllStats(all);
+  notifyDataChanged();
 }
 
 export async function saveSessionData(topicKey: string, session: SessionData): Promise<void> {
@@ -188,6 +189,7 @@ export async function savePracticeResults(
   });
 
   await saveAllStats(all);
+  notifyDataChanged();
 }
 
 export async function clearSessionData(topicKey: string): Promise<void> {
@@ -252,6 +254,7 @@ export async function loadSettings(): Promise<AppSettings> {
 
 export async function saveSettings(settings: AppSettings): Promise<void> {
   await set(KEYS.SETTINGS, settings);
+  notifyDataChanged();
 }
 
 // ============ Export / Import ============
@@ -297,5 +300,17 @@ export async function saveExamResult(result: ExamResult): Promise<void> {
   const all = await loadExamResults();
   all.unshift(result);
   await set(KEYS.EXAM_RESULTS, all.slice(0, 50)); // store up to last 50 attempts
+  notifyDataChanged();
 }
+
+export async function saveAllExamResults(results: ExamResult[]): Promise<void> {
+  await set(KEYS.EXAM_RESULTS, results.slice(0, 50));
+}
+
+export function notifyDataChanged(): void {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('pdd_data_changed'));
+  }
+}
+
 

@@ -6,10 +6,12 @@ import StatsPage from './pages/StatsPage';
 import SettingsPage from './pages/SettingsPage';
 import AiCoachPage from './pages/AiCoachPage';
 import { AiGenPage } from './pages/AiGenPage';
+import { AuthProvider } from './context/AuthContext';
+import { UserSyncBadge } from './components/UserSyncBadge';
 
 function App() {
   return (
-    <>
+    <AuthProvider>
       <header className="app-header">
         <div className="app-container">
           <Link to="/" className="app-logo">
@@ -36,6 +38,9 @@ function App() {
               ⚙️
             </NavLink>
           </nav>
+          <div className="header-actions">
+            <UserSyncBadge />
+          </div>
         </div>
       </header>
       <main className="app-container">
@@ -50,7 +55,7 @@ function App() {
           <Route path="/ai-gen" element={<AiGenPage />} />
         </Routes>
       </main>
-    </>
+    </AuthProvider>
   );
 }
 

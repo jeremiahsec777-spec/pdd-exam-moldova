@@ -10,16 +10,29 @@ export default function HomePage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    (async () => {
-      try {
-        const [data, allStats] = await Promise.all([loadQuizData(), loadAllStats()]);
-        setQuizData(data);
-        setStats(allStats);
-      } catch (e) {
-        console.error('Failed to load data', e);
-      }
-      setLoading(false);
-    })();
+    let active = true;
+
+    function fetchState() {
+      Promise.all([loadQuizData(), loadAllStats()])
+        .then(([data, allStats]) => {
+          if (active) {
+            setQuizData(data);
+            setStats(allStats);
+            setLoading(false);
+          }
+        })
+        .catch((e) => {
+          console.error('Failed to load data', e);
+          if (active) setLoading(false);
+        });
+    }
+
+    fetchState();
+    window.addEventListener('pdd_data_synced', fetchState);
+    return () => {
+      active = false;
+      window.removeEventListener('pdd_data_synced', fetchState);
+    };
   }, []);
 
   const hasMistakes = () => {
